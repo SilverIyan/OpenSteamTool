@@ -1,0 +1,29 @@
+name: Build OpenSteamTool
+on: [push, workflow_dispatch] # 手动触发或推送代码时运行
+
+jobs:
+  build:
+    runs-on: windows-2022 # 使用最新的 Windows 服务器
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive' # 拉取子模块
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1 # 配置 MSVC 环境[reference:0]
+
+      - name: Configure CMake
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64 # 使用 VS 2022 生成器[reference:1]
+
+      - name: Build
+        run: cmake --build build --config Release # 编译 Release 版本
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenSteamTool-DLLs
+          path: |
+            build/**/dwmapi.dll
+            build/**/xinput1_4.dll
+            build/**/OpenSteamTool.dll
