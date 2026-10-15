@@ -20,17 +20,12 @@ jobs:
       run: cmake -S src -B build -G "Visual Studio 17 2022" -A x64
 
     - name: Build Main Project (Release)
-      # 只编译 Release 版，避免 Debug 版拖慢速度
+      # 只编译主项目，不再单独编译 extract_tickets
       run: cmake --build build --config Release
-
-    - name: Build extract_tickets Tool (Release)
-      # 单独编译 EXCLUDE_FROM_ALL 的目标
-      run: cmake --build build --config Release --target extract_tickets
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: OpenSteamTool-Binaries
-        # 直接抓取 build 目录下所有生成的 dll 文件
-        # （即使它们在 build\tools\Release 或 build\Release，都能抓到）
+        # 抓取 build 目录下所有生成的 dll 文件
         path: build/**/*.dll
