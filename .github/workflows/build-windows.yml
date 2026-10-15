@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2022 # 使用最新版 Windows 服务器，自带 CMake 和 VS 2022
+    runs-on: windows-2022 # 自带 VS 2022 和 CMake
 
     steps:
     - name: Checkout repository
@@ -16,18 +16,21 @@ jobs:
         submodules: 'recursive'
 
     - name: Configure CMake
-      run: cmake -B build -G "Visual Studio 17 2022" -A x64
+      # 注意：这里加了 -S src，对应你 build.bat 里的源码路径
+      run: cmake -S src -B build -G "Visual Studio 17 2022" -A x64
 
-    - name: Build
+    - name: Build Main Project (Release)
+      # 只编译 Release 版，避免 Debug 版拖慢速度
       run: cmake --build build --config Release
+
+    - name: Build extract_tickets Tool (Release)
+      # 单独编译 EXCLUDE_FROM_ALL 的目标
+      run: cmake --build build --config Release --target extract_tickets
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: OpenSteamTool-Binaries
-        # 根据你的项目实际输出路径，可能需要调整下面几行
-        path: |
-          build/**/dwmapi.dll
-          build/**/xinput1_4.dll
-          build/**/OpenSteamTool.dll
-          build/**/*.dll
+        # 直接抓取 build 目录下所有生成的 dll 文件
+        # （即使它们在 build\tools\Release 或 build\Release，都能抓到）
+        path: build/**/*.dll
